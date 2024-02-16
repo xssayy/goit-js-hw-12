@@ -1,0 +1,133 @@
+/**
+  |============================
+  | include css partials with
+  | default @import url()
+  |============================
+*/
+@import url('./reset.css');
+
+:root {
+  font-family: 'Montserrat';
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #242424;
+  background-color: rgba(255, 255, 255, 0.87);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.form-input {
+  width: 272px;
+  height: 40px;
+  background-color: #fff;
+  border: 1px solid #808080;
+  border-radius: 4px;
+
+  padding: 8px 16px;
+}
+
+.form-input::placeholder {
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: #808080;
+}
+
+.submit-btn {
+  width: fit-content;
+  height: 40px;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  background-color: #4e75ff;
+  border: none;
+  border-radius: 8px;
+}
+
+.gallery {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 24px 24px;
+  max-width: 1200px;
+  margin: 32px auto 0;
+}
+
+.gallery-item {
+  position: relative;
+  transition: transform 0.3s ease-in-out;
+}
+
+.gallery-item:hover {
+  transform: scale(1.04);
+}
+
+.galery-img {
+  object-fit: cover;
+}
+
+.description {
+  height: 48px;
+  width: 100%;
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  line-height: 1.33333;
+  background-color: #fff;
+  border: 1px solid #808080;
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+}
+
+.description-item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* // loader // */
+.loader-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid orange;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
