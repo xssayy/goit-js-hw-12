@@ -4,17 +4,41 @@ import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const form = document.querySelector('.form');
-const gallery = document.querySelector('.gallery');
-const loader = document.querySelector('.loader');
+import axios from 'axios';
 
-form.addEventListener('submit', e => {
+const refs = {
+  form: document.querySelector('.form'),
+  gallery: document.querySelector('.gallery'),
+  loader: document.querySelector('.loader'),
+};
+
+let page;
+let maxPage;
+
+refs.form.addEventListener('submit', onFormSubmit);
+
+function onFormSubmit(e) {
+  e.preventDefault();
+  const query = e.target.elements.query.value.trim();
+  page = 1;
+  if (!query) {
+    showError('Поле не може бути порожнім!');
+  }
+  showLoader();
+
+  try {
+  } catch (err) {}
+  hideLoader();
+  e.target.reset();
+}
+
+refs.form.addEventListener('submit', e => {
   e.preventDefault();
   const searchRequestValue = e.target.elements.input.value;
   loaderOn();
   getImages(searchRequestValue)
     .then(res => {
-      gallery.innerHTML = '';
+      refs.gallery.innerHTML = '';
       renderImages(res);
     })
     .then(() => {
@@ -107,17 +131,31 @@ function templateImage(images) {
 
 function renderImages(searchRequestValue) {
   const markup = templateImage(searchRequestValue);
-  gallery.innerHTML = markup;
+  refs.gallery.innerHTML = markup;
 }
 
-function loaderOff() {
-  loader.classList.add('is-hidden');
+function showLoader() {
+  refs.loader.classList.add('is-hidden');
 }
 
-function loaderOn() {
-  loader.classList.remove('is-hidden');
+function hideLoader() {
+  refs.loader.classList.remove('is-hidden');
 }
 
+function showError(error) {
+  iziToast.error({
+    title: 'Помилка',
+    message: `${error}`,
+    position: 'topRight',
+  });
+}
+function showMessage(msg) {
+  iziToast.show({
+    title: 'Увага!',
+    message: `${msg}`,
+    position: 'topRight',
+  });
+}
 var lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
