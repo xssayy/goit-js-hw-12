@@ -5,14 +5,6 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import axios from 'axios';
 
-// import {
-//   showError,
-//   showMessage,
-//   showLoader,
-//   hideLoader,
-//   scrollPage,
-// } from './js/helpers';
-
 export const refs = {
   form: document.querySelector('.form'),
   gallery: document.querySelector('.gallery'),
