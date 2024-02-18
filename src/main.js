@@ -1,73 +1,66 @@
-import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
-
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
 import axios from 'axios';
 
-const refs = {
+// import {
+//   showError,
+//   showMessage,
+//   showLoader,
+//   hideLoader,
+//   scrollPage,
+// } from './js/helpers';
+
+export const refs = {
   form: document.querySelector('.form'),
   gallery: document.querySelector('.gallery'),
   loader: document.querySelector('.loader'),
+  loadMoreBtn: document.querySelector('.load-more-btn'),
 };
+const { form, gallery, loader, loadMoreBtn } = refs;
 
 let page;
-let maxPage;
+let query;
+let perPageValue = 15;
 
-refs.form.addEventListener('submit', onFormSubmit);
+form.addEventListener('submit', onFormSubmit);
+loadMoreBtn.addEventListener('click', onLoadMore);
 
-function onFormSubmit(e) {
+async function onFormSubmit(e) {
   e.preventDefault();
-  const query = e.target.elements.query.value.trim();
-  page = 1;
-  if (!query) {
-    showError('Поле не може бути порожнім!');
-  }
   showLoader();
 
-  try {
-  } catch (err) {}
-  hideLoader();
-  e.target.reset();
-}
+  query = e.target.elements.input.value.toLowerCase().trim();
+  page = 1;
 
-refs.form.addEventListener('submit', e => {
-  e.preventDefault();
-  const searchRequestValue = e.target.elements.input.value;
-  loaderOn();
-  getImages(searchRequestValue)
-    .then(res => {
-      refs.gallery.innerHTML = '';
-      renderImages(res);
-    })
-    .then(() => {
-      loaderOff();
-      e.target.reset();
-      lightbox.refresh();
-    })
-    .catch(() => {
-      loaderOff();
-    });
-});
-
-function getImages(searchRequestValue) {
-  if (searchRequestValue.trim() === '') {
-    return Promise.reject(new Error('Поле не може бути порожнім.')).catch(
-      err => {
-        loaderOff();
-        iziToast.error({
-          title: 'Помилка',
-          message: 'Поле не може бути порожнім.',
-          position: 'topRight',
-        });
-      }
-    );
+  gallery.innerHTML = '';
+  if (query === '') {
+    showError('Поле не може бути порожнім.');
+    loadMoreBtn.classList.add('is-hidden');
+    hideLoader();
+    return;
   }
 
+  const data = await getImages(query);
+  if (data.totalHits === 0) {
+    showError('Відсутні результати пошуку. Спробуйте ще раз!');
+    hideLoader();
+    loadMoreBtn.classList.add('is-hidden');
+    return;
+  }
+  renderImages(data);
+  checkLoadMore(data);
+
+  e.target.reset();
+  hideLoader();
+}
+
+async function getImages(searchRequestValue) {
   const params = {
     key: '42321641-23e42709c41860fd235775557',
-    q: `${searchRequestValue.trim()}`
+    q: `${searchRequestValue}`
       .split(' ')
       .map(word => {
         return word.toLowerCase().trim();
@@ -77,35 +70,23 @@ function getImages(searchRequestValue) {
     orientation: 'horizontal',
     safesearch: true,
   };
-  const url = `https://pixabay.com/api/?key=${params.key}&q=${params.q}&image_type=${params.image_type}&orientation=${params.orientation}&safesearch=${params.safesearch}`;
 
-  return fetch(url)
-    .then(res => res.json())
-    .then(res => {
-      if (res.totalHits === 0) {
-        throw new Error();
-      }
+  const url = `https://pixabay.com/api/?key=${params.key}&q=${params.q}&image_type=${params.image_type}&orientation=${params.orientation}&safesearch=${params.safesearch}&page=${page}&per_page=${perPageValue}`;
+  const data = await axios.get(url);
 
-      return res.hits;
-    })
-    .catch(() => {
-      iziToast.error({
-        title: 'Помилка',
-        message: 'Відсутні результати пошуку. Спробуйте знову!',
-        position: 'topRight',
-      });
-    });
+  return data.data;
 }
 
-function templateImage(images) {
-  const markup = images
+async function templateImage(data) {
+  //===============================================
+  const markup = data
     .map(image => {
       return `<li class="gallery-item">
  <a href="${image.largeImageURL}"> <img
     class="galery-img"
     src="${image.webformatURL}"
     alt="${image.tags}"
-    
+
     width="360"
     height="200px"/>
     </a>
@@ -129,17 +110,53 @@ function templateImage(images) {
   return markup;
 }
 
-function renderImages(searchRequestValue) {
-  const markup = templateImage(searchRequestValue);
-  refs.gallery.innerHTML = markup;
+async function renderImages(data) {
+  const markup = await templateImage(data.hits);
+  gallery.insertAdjacentHTML('beforeend', markup);
+  lightbox.refresh();
+}
+
+async function onLoadMore() {
+  showLoader();
+  const data = await getImages(query);
+  checkLoadMore(data);
+  renderImages(data);
+  scrollPage();
+  hideLoader();
+}
+
+function checkLoadMore(data) {
+  const maxPage = Math.ceil(data.totalHits / page);
+
+  if (page >= maxPage) {
+    loadMoreBtn.classList.add('is-hidden');
+    showMessage("We're sorry, but you've reached the end of search results.");
+    return;
+  } else if (page < maxPage) {
+    loadMoreBtn.classList.remove('is-hidden');
+    page++;
+  }
+}
+
+function scrollPage() {
+  const height = document
+    .querySelector('.gallery-item')
+    .getBoundingClientRect().height;
+
+  setTimeout(() => {
+    window.scrollBy({
+      top: height * 2,
+      behavior: 'smooth',
+    });
+  }, 100);
 }
 
 function showLoader() {
-  refs.loader.classList.add('is-hidden');
+  loader.classList.remove('is-hidden');
 }
 
 function hideLoader() {
-  refs.loader.classList.remove('is-hidden');
+  loader.classList.add('is-hidden');
 }
 
 function showError(error) {
@@ -150,13 +167,18 @@ function showError(error) {
   });
 }
 function showMessage(msg) {
-  iziToast.show({
-    title: 'Увага!',
+  iziToast.info({
+    title: '',
     message: `${msg}`,
     position: 'topRight',
   });
 }
+
 var lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
+
+// HELPERS: showError, showMessage, hideLoader, showLoader, scroll
+// LOAD_MORE: checkLoadMore, onLoadMore
+// RENDER: templateImage, renderImages, getImages
