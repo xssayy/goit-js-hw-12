@@ -118,7 +118,7 @@ async function onLoadMore() {
 }
 
 function checkLoadMore(data) {
-  const maxPage = Math.ceil(data.totalHits / page);
+  const maxPage = Math.ceil(data.totalHits / perPageValue);
 
   if (page >= maxPage) {
     loadMoreBtn.classList.add('is-hidden');
@@ -127,6 +127,8 @@ function checkLoadMore(data) {
   } else if (page < maxPage) {
     loadMoreBtn.classList.remove('is-hidden');
     page++;
+    console.log('Max page: ', maxPage);
+    console.log('Page: ', page);
   }
 }
 
