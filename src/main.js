@@ -127,8 +127,6 @@ function checkLoadMore(data) {
   } else if (page < maxPage) {
     loadMoreBtn.classList.remove('is-hidden');
     page++;
-    console.log('Max page: ', maxPage);
-    console.log('Page: ', page);
   }
 }
 
